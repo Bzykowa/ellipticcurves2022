@@ -2,10 +2,10 @@ import java.math.BigInteger;
 
 public class PollardTuple {
     private BigInteger x;
-    private long a;
-    private long b;
+    private BigInteger a;
+    private BigInteger b;
     
-    public PollardTuple(BigInteger x, long a, long b) {
+    public PollardTuple(BigInteger x, BigInteger a, BigInteger b) {
         this.x = x;
         this.a = a;
         this.b = b;
@@ -16,16 +16,16 @@ public class PollardTuple {
     public void setX(BigInteger x) {
         this.x = x;
     }
-    public long getA() {
+    public BigInteger getA() {
         return a;
     }
-    public void setA(long a) {
+    public void setA(BigInteger a) {
         this.a = a;
     }
-    public long getB() {
+    public BigInteger getB() {
         return b;
     }
-    public void setB(long b) {
+    public void setB(BigInteger b) {
         this.b = b;
     }
 }
