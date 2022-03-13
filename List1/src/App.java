@@ -7,6 +7,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
+        //Randomly choose p length between 40 and 59 bits
         int pLength = random.nextInt(40, 60);
         BigInteger p;
         BigInteger g;
@@ -21,16 +22,16 @@ public class App {
         } while (!p.isProbablePrime(20));
         System.out.println("p = " + p);
 
-        // Find g that will satisfy g = g'^2 (mod p) = 1
+        // Find g that will satisfy g = g'^2 (mod p) != 1
         BigInteger g1;
-        //do {
+        do {
             g1 = BigInteger.valueOf(random.nextLong(p.longValue()-2)+2);
             g = g1.modPow(BigInteger.TWO,p);
             //System.out.println("g1: "+ g1 + " g1^2 mod p: " + g.mod(p) + " p: " + p);
-        //} while (!(g.mod(p).compareTo(BigInteger.ONE) == 0));
-        System.out.println("g = " + g + " g1 = " + g1);
+        } while (g.mod(p).compareTo(BigInteger.ONE) == 0);
+        System.out.println("g = " + g + " g' = " + g1);
 
-        //max x = q
+        //Generate y = g^x, where x is randomly chosen from [0, ord(g)]
         long initX = random.nextLong((p.subtract(BigInteger.ONE)).divide(BigInteger.TWO).longValue());
         y = g.modPow(BigInteger.valueOf(initX), p);
         System.out.println("y = " + y + " initX = " + initX);

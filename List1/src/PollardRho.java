@@ -109,7 +109,7 @@ public class PollardRho {
 
     /**
      * Function calculating x in g^x = y (mod p)
-     * @return
+     * @return x
      */
     public BigInteger solveX() {
 
