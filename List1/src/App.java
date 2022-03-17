@@ -29,7 +29,7 @@ public class App {
             g = g1.modPow(BigInteger.TWO,p);
             //System.out.println("g1: "+ g1 + " g1^2 mod p: " + g.mod(p) + " p: " + p);
         } while (g.mod(p).compareTo(BigInteger.ONE) == 0);
-        System.out.println("g = " + g + " g' = " + g1);
+        System.out.println("g = " + g);
 
         //Generate y = g^x, where x is randomly chosen from [0, ord(g)]
         long initX = random.nextLong((p.subtract(BigInteger.ONE)).divide(BigInteger.TWO).longValue());
@@ -37,7 +37,9 @@ public class App {
         System.out.println("y = " + y + " initX = " + initX);
 
         PollardRho pollard = new PollardRho(p, g, y);
+        long start = System.currentTimeMillis();
         BigInteger x = pollard.solveX();
+        System.out.println("Algorithm ran for: "+ (System.currentTimeMillis()-start)/1000 + "s");
         System.out.println("X = " + x);
 
     }
