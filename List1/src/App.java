@@ -18,6 +18,7 @@ public class App {
             // BigInteger of pLength bits that is probably prime with probability in range
             // [1/2^20,1]
             BigInteger p1 = new BigInteger(pLength, 20, random);
+            //System.out.println(p1.isProbablePrime(20));
             p = p1.multiply(BigInteger.TWO).add(BigInteger.ONE);
         } while (!p.isProbablePrime(20));
         System.out.println("p = " + p);
