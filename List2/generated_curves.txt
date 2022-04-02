@@ -1,0 +1,9 @@
+40 bitLength
+Elliptic Curve defined by y^2 = x^3 + 323224645220*x + 627515206199 over Finite Field of size 949091681849
+Order of the curve: 949091474941
+Basepoint in normalized projective coordinates: (382668982005 : 726114684450 : 1)
+
+60 bitLength
+Elliptic Curve defined by y^2 = x^3 + 6585505404727711*x + 831657242604308385 over Finite Field of size 847984033840633271
+Order of the curve: 847984034476391777
+Basepoint in normalized projective coordinates: (492600689517158280 : 313234973919103957 : 1)
