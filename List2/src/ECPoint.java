@@ -1,9 +1,9 @@
 import java.math.BigInteger;
 
 /**
- * Class representing point on an elliptic curve in affine coordinates (x,y) 
+ * Class representing point on an elliptic curve in affine coordinates (x,y)
  */
-public class ECPoint{
+public class ECPoint {
     private BigInteger x;
     private BigInteger y;
 
@@ -28,7 +28,7 @@ public class ECPoint{
         this.x = x;
     }
 
-    public boolean equals(ECPoint q){
+    public boolean equals(ECPoint q) {
         return (x.equals(q.getX())) && (y.equals(q.getY()));
     }
 }
