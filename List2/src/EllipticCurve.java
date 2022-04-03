@@ -32,6 +32,7 @@ public class EllipticCurve {
 
     /**
      * Get order of the elliptic curve
+     * 
      * @return Order of E_a,b(F_p)
      */
     public BigInteger getQ() {
@@ -44,6 +45,7 @@ public class EllipticCurve {
 
     /**
      * Return size of finite field F_p over which is the elliptic curve
+     * 
      * @return p in F_p
      */
     public BigInteger getP() {
@@ -56,6 +58,7 @@ public class EllipticCurve {
 
     /**
      * Get paramater b in equation y^2 = x^3 + a*x + b
+     * 
      * @return b in equation y^2 = x^3 + a*x + b
      */
     public BigInteger getB() {
@@ -68,6 +71,7 @@ public class EllipticCurve {
 
     /**
      * Get paramater a in equation y^2 = x^3 + a*x + b
+     * 
      * @return a in equation y^2 = x^3 + a*x + b
      */
     public BigInteger getA() {
@@ -80,7 +84,8 @@ public class EllipticCurve {
 
     /**
      * Get basepoint of the elliptic curve
-     * @return ECPoint basepoint 
+     * 
+     * @return ECPoint basepoint
      */
     public ECPoint getBasepoint() {
         return basepoint;
@@ -92,6 +97,7 @@ public class EllipticCurve {
 
     /**
      * Get the ECPoint representing zero at infinity
+     * 
      * @return ECPoint zero at infinity
      */
     public ECPoint getZeroAtInfinity() {
@@ -99,7 +105,8 @@ public class EllipticCurve {
     }
 
     /**
-     * As there is no infinity in BigInteger let's generate point off the curve to be
+     * As there is no infinity in BigInteger let's generate point off the curve to
+     * be
      * a point of reference for zero at infinity.
      * 
      * @return ECPoint to serve as zero at infinity
@@ -173,6 +180,40 @@ public class EllipticCurve {
         BigInteger y = pPoint.getY().negate().add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
 
         return new ECPoint(x, y);
+    }
+
+    /**
+     * Scalar multiplication of a point on elliptic curve
+     * 
+     * @param n
+     * @param point
+     * @return
+     */
+    public ECPoint scalarMultiply(BigInteger n, ECPoint point) {
+        // Write scalar as binary number
+        String nBinary = n.toString(2);
+        //exponent of 2 at index 0
+        int exp = nBinary.length() - 1;
+        ECPoint result = null;
+
+        for (int i = 0; i < nBinary.length(); i++) {
+            /*
+             * If nBinary[i] == '1' double the point exp times (exp = nBinary.length()-1-i;
+             * exponent for 2 at this place in binary representation) else do nothing
+             */
+            if (nBinary.charAt(i) == '1') {
+                ECPoint partialSum = new ECPoint(point.getX(), point.getY());
+                for (int j = 0; j < exp; j++) {
+                    partialSum = doublePoint(partialSum);
+                }
+
+                result = result == null ? partialSum : addPoints(result, partialSum);
+            }
+
+            exp = exp - 1;
+        }
+
+        return result == null ? zeroAtInfinity : result;
     }
 
 }

@@ -8,6 +8,7 @@ import java.math.BigInteger;
 public class PollardRhoEC {
     private EllipticCurve curve;
     private ECPoint bigY;
+    private int i = 0; // iterations of algorithm counter
 
     /**
      * Main constructor of the class
@@ -90,6 +91,11 @@ public class PollardRhoEC {
         }
 
         return new PollardTupleEC(r1, a1, b1);
+    }
+
+    public BigInteger solveS() {
+        // TODO implement SecureRandom and then the method as in
+        // https://www.diva-portal.org/smash/get/diva2:1326270/FULLTEXT01.pdf
     }
 
 }
