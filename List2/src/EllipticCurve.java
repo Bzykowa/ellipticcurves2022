@@ -30,6 +30,10 @@ public class EllipticCurve {
         zeroAtInfinity = calculateZeroAtInfinity();
     }
 
+    /**
+     * Get order of the elliptic curve
+     * @return Order of E_a,b(F_p)
+     */
     public BigInteger getQ() {
         return q;
     }
@@ -38,6 +42,10 @@ public class EllipticCurve {
         this.q = q;
     }
 
+    /**
+     * Return size of finite field F_p over which is the elliptic curve
+     * @return p in F_p
+     */
     public BigInteger getP() {
         return p;
     }
@@ -46,6 +54,10 @@ public class EllipticCurve {
         this.p = p;
     }
 
+    /**
+     * Get paramater b in equation y^2 = x^3 + a*x + b
+     * @return b in equation y^2 = x^3 + a*x + b
+     */
     public BigInteger getB() {
         return b;
     }
@@ -54,6 +66,10 @@ public class EllipticCurve {
         this.b = b;
     }
 
+    /**
+     * Get paramater a in equation y^2 = x^3 + a*x + b
+     * @return a in equation y^2 = x^3 + a*x + b
+     */
     public BigInteger getA() {
         return a;
     }
@@ -62,6 +78,10 @@ public class EllipticCurve {
         this.a = a;
     }
 
+    /**
+     * Get basepoint of the elliptic curve
+     * @return ECPoint basepoint 
+     */
     public ECPoint getBasepoint() {
         return basepoint;
     }
@@ -70,15 +90,19 @@ public class EllipticCurve {
         this.basepoint = basepoint;
     }
 
+    /**
+     * Get the ECPoint representing zero at infinity
+     * @return ECPoint zero at infinity
+     */
     public ECPoint getZeroAtInfinity() {
         return zeroAtInfinity;
     }
 
     /**
-     * As there is no infinity in BigInteger let's generate point of the curve to be
+     * As there is no infinity in BigInteger let's generate point off the curve to be
      * a point of reference for zero at infinity.
      * 
-     * @return point off the curve to serve as zero at infinity
+     * @return ECPoint to serve as zero at infinity
      */
     private ECPoint calculateZeroAtInfinity() {
 
