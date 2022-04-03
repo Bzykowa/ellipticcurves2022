@@ -115,13 +115,13 @@ public class EllipticCurve {
             return zeroAtInfinity;
         }
 
-        //(q_y-p_y)/(q_x-p_x)
+        // (q_y - p_y)/(q_x - p_x)
         BigInteger alpha = (qPoint.getY().subtract(pPoint.getY())).divide(qPoint.getX().subtract(pPoint.getX()));
         // x = alpha^2 - p_x - q_x (mod p)
         BigInteger x = alpha.pow(2).subtract(pPoint.getX()).subtract(qPoint.getX()).mod(p);
         // y = -p_y + alpha * (p_x - x) (mod p)
         BigInteger y = pPoint.getY().negate().add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
-        
+
         return new ECPoint(x, y);
     }
 
@@ -129,11 +129,26 @@ public class EllipticCurve {
      * Double the point on this elliptic curve
      * 
      * @param pPoint
-     * @return
+     * @return 2*pPoint which is the same as pPoint + pPoint on elliptic curve
      */
     public ECPoint doublePoint(ECPoint pPoint) {
-        // TODO implement doubling
-        return pPoint;
+
+        // p_y = 0 or p = zero at inf
+        if (pPoint.getY().equals(BigInteger.ZERO) || pPoint.equals(zeroAtInfinity)) {
+            return zeroAtInfinity;
+        }
+
+        // (3*p_x^2 + a)/2*p_y
+        BigInteger alpha = ((BigInteger.valueOf(3).multiply(pPoint.getX().pow(2))).add(a))
+                .divide(BigInteger.TWO.multiply(pPoint.getY()));
+
+        // x = alpha^2 - 2*p_x (mod p)
+        BigInteger x = alpha.pow(2).subtract(BigInteger.TWO.multiply(pPoint.getX())).mod(p);
+
+        // y = -p_y + alpha * (p_x - x) (mod p)
+        BigInteger y = pPoint.getY().negate().add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
+
+        return new ECPoint(x, y);
     }
 
 }
