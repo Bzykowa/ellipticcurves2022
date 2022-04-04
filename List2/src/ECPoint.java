@@ -31,4 +31,8 @@ public class ECPoint {
     public boolean equals(ECPoint q) {
         return (x.equals(q.getX())) && (y.equals(q.getY()));
     }
+
+    public String toString() {
+        return "(" + x + "," + y + ")";
+    }
 }

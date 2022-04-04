@@ -36,4 +36,12 @@ public class PollardTupleEC {
         this.r = r;
     }
 
+    public boolean equals(PollardTupleEC i) {
+        return (r.equals(i.getR())) && (a.equals(i.getA())) && (b.equals(i.getB()));
+    }
+
+    public String toString() {
+        return r.toString() + ", " + a + ", " + b;
+    }
+
 }
