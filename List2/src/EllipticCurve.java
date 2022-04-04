@@ -143,15 +143,20 @@ public class EllipticCurve {
 
         // If p_x = q_x result is zero at infinity
         if (pPoint.getX().equals(qPoint.getX())) {
-            return zeroAtInfinity;
+            if (pPoint.getY().equals(qPoint.getY())) {
+                return doublePoint(pPoint);
+            } else {
+                return zeroAtInfinity;
+            }
         }
 
         // (q_y - p_y)/(q_x - p_x)
-        BigInteger alpha = (qPoint.getY().subtract(pPoint.getY())).divide(qPoint.getX().subtract(pPoint.getX()));
+        BigInteger alpha = (qPoint.getY().subtract(pPoint.getY()))
+                .multiply((qPoint.getX().subtract(pPoint.getX())).modInverse(p)).mod(p);
         // x = alpha^2 - p_x - q_x (mod p)
-        BigInteger x = alpha.pow(2).subtract(pPoint.getX()).subtract(qPoint.getX()).mod(p);
+        BigInteger x = (alpha.modPow(BigInteger.TWO, p)).subtract(pPoint.getX()).subtract(qPoint.getX()).mod(p);
         // y = -p_y + alpha * (p_x - x) (mod p)
-        BigInteger y = pPoint.getY().negate().add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
+        BigInteger y = (pPoint.getY().negate()).add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
 
         return new ECPoint(x, y);
     }
@@ -170,14 +175,14 @@ public class EllipticCurve {
         }
 
         // (3*p_x^2 + a)/2*p_y
-        BigInteger alpha = ((BigInteger.valueOf(3).multiply(pPoint.getX().pow(2))).add(a))
-                .divide(BigInteger.TWO.multiply(pPoint.getY()));
+        BigInteger alpha = (((BigInteger.valueOf(3)).multiply(pPoint.getX().modPow(BigInteger.TWO, p))).add(a))
+                .multiply(((BigInteger.TWO).multiply(pPoint.getY())).modInverse(p)).mod(p);
 
         // x = alpha^2 - 2*p_x (mod p)
-        BigInteger x = alpha.pow(2).subtract(BigInteger.TWO.multiply(pPoint.getX())).mod(p);
+        BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pPoint.getX())).mod(p);
 
         // y = -p_y + alpha * (p_x - x) (mod p)
-        BigInteger y = pPoint.getY().negate().add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
+        BigInteger y = (pPoint.getY().negate()).add(alpha.multiply(pPoint.getX().subtract(x))).mod(p);
 
         return new ECPoint(x, y);
     }
@@ -192,7 +197,7 @@ public class EllipticCurve {
     public ECPoint scalarMultiply(BigInteger n, ECPoint point) {
         // Write scalar as binary number
         String nBinary = n.toString(2);
-        //exponent of 2 at index 0
+        // exponent of 2 at index 0
         int exp = nBinary.length() - 1;
         ECPoint result = null;
 
