@@ -27,6 +27,7 @@ public class App {
 
         Scanner in = new Scanner(System.in);
         String input = in.nextLine();
+        in.close();
 
         switch (input) {
             case "10": {
