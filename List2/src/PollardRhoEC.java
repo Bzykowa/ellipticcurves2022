@@ -35,9 +35,9 @@ public class PollardRhoEC {
 
         BigInteger partitionPoint = curve.getQ().divide(BigInteger.valueOf(3));
 
-        if (r.getX().compareTo(partitionPoint) == -1) {
+        if (r.getY().compareTo(partitionPoint) == -1) {
             return 0;
-        } else if (r.getX().compareTo(partitionPoint.multiply(BigInteger.TWO)) == -1) {
+        } else if (r.getY().compareTo(partitionPoint.multiply(BigInteger.TWO)) == -1) {
             return 1;
         } else {
             return 2;
@@ -56,30 +56,30 @@ public class PollardRhoEC {
 
         switch (partition(i.getR())) {
             case 0: {
-                // P + R_i
-                r1 = curve.addPoints(curve.getBasepoint(), i.getR());
-                // a_i + 1 (mod q)
-                a1 = i.getA().add(BigInteger.ONE).mod(curve.getQ());
-                // b_i (mod q)
-                b1 = i.getB().mod(curve.getQ());
+                // Y + R_i
+                r1 = curve.addPoints(bigY, i.getR());
+                // a_i 
+                a1 = i.getA();
+                // b_i + 1(mod q)
+                b1 = i.getB().add(BigInteger.ONE).mod(curve.getQ());
                 break;
             }
             case 1: {
                 // 2 * R_i
                 r1 = curve.doublePoint(i.getR());
                 // 2 * a_i (mod q)
-                a1 = BigInteger.TWO.multiply(i.getA()).mod(curve.getQ());
+                a1 = (BigInteger.TWO).multiply(i.getA()).mod(curve.getQ());
                 // 2 * b_i (mod q)
-                b1 = BigInteger.TWO.multiply(i.getB()).mod(curve.getQ());
+                b1 = (BigInteger.TWO).multiply(i.getB()).mod(curve.getQ());
                 break;
             }
             case 2: {
-                // Y + R_i
-                r1 = curve.addPoints(bigY, i.getR());
-                // a_i (mod q)
-                a1 = i.getA().mod(curve.getQ());
-                // b_i + 1 (mod q)
-                b1 = i.getB().add(BigInteger.ONE).mod(curve.getQ());
+                // P + R_i
+                r1 = curve.addPoints(curve.getBasepoint(), i.getR());
+                // a_i + 1 (mod q)
+                a1 = i.getA().add(BigInteger.ONE).mod(curve.getQ());
+                // b_i 
+                b1 = i.getB();
                 break;
             }
             default: {
@@ -93,9 +93,35 @@ public class PollardRhoEC {
         return new PollardTupleEC(r1, a1, b1);
     }
 
+    /**
+     * Function solving ECDLP -> Y = s * P (find the s)
+     * 
+     * @return s, -1 if was unable to solve
+     */
     public BigInteger solveS() {
-        // TODO implement SecureRandom and then the method as in
-        // https://www.diva-portal.org/smash/get/diva2:1326270/FULLTEXT01.pdf
+
+        BigInteger a0 = BigInteger.ONE;
+        BigInteger b0 = BigInteger.ZERO;
+        i = 0;
+
+        PollardTupleEC t = new PollardTupleEC(curve.getBasepoint(), a0, b0);
+        PollardTupleEC h = new PollardTupleEC(curve.getBasepoint(), a0, b0);
+
+        // race till collision
+        do {
+            i += 1;
+            t = f(t);
+            h = f(f(h));
+        } while (!t.getR().equals(h.getR()));
+
+        System.out.println(t.toString());
+        System.out.println(h.toString());
+        System.out.println("Algorithm took " + i + " iterations.");
+
+        // if gcd(q, h_b - t_b) return (h_a - t_a)/(t_b - h_b) mod q else error so return -1
+        return curve.getQ().gcd(h.getB().subtract(t.getB())).equals(BigInteger.ONE)
+                ? (h.getA().subtract(t.getA())).multiply((t.getB().subtract(h.getB())).modInverse(curve.getQ())).mod(curve.getQ())
+                : BigInteger.valueOf(-1);
     }
 
 }
