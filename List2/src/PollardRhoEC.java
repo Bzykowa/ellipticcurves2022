@@ -114,8 +114,8 @@ public class PollardRhoEC {
             h = f(f(h));
         } while (!t.getR().equals(h.getR()));
 
-        System.out.println(t.toString());
-        System.out.println(h.toString());
+        //System.out.println(t.toString());
+        //System.out.println(h.toString());
         System.out.println("Algorithm took " + i + " iterations.");
 
         // if gcd(q, h_b - t_b) return (h_a - t_a)/(t_b - h_b) mod q else error so return -1
