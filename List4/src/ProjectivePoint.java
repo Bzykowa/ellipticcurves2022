@@ -1,9 +1,7 @@
 import java.math.BigInteger;
 
-public class ProjectivePoint {
+public class ProjectivePoint extends Point{
 
-    public BigInteger x;
-    public BigInteger y;
     public BigInteger z;
 
     public ProjectivePoint(BigInteger x, BigInteger y, BigInteger z) {
@@ -12,8 +10,13 @@ public class ProjectivePoint {
         this.z = z;
     }
 
-    public boolean equals(ProjectivePoint q) {
-        return (x.equals(q.x)) && (y.equals(q.y)) && z.equals(q.z);
+    public boolean equals(Object q) {
+        if (q instanceof ProjectivePoint) {
+            ProjectivePoint qq = (ProjectivePoint) q;
+            return (x.equals(qq.x)) && (y.equals(qq.y)) && z.equals(qq.z);
+        } else {
+            return false;
+        }
     }
 
     public String toString() {

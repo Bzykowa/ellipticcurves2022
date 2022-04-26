@@ -3,7 +3,7 @@ import java.math.BigInteger;
 /**
  * Class representing an elliptic curve E_a,b(F_p) of order q with its basepoint
  */
-public class EllipticCurve<Point> {
+public class EllipticCurve {
 
     private Point basepoint;
     private BigInteger a;
@@ -122,13 +122,14 @@ public class EllipticCurve<Point> {
             o.y = (o.y.add(BigInteger.ONE));
         }
 
-        //If basepoint is affine then 0 at inf is also analogously for projective coordinates
+        // If basepoint is affine then 0 at inf is also analogously for projective
+        // coordinates
         if (basepoint instanceof AffinePoint) {
             return (Point) o;
 
         } else if (basepoint instanceof ProjectivePoint) {
-            return (Point) new ProjectivePoint(o.x, o.y, BigInteger.ONE)
-        } else{
+            return (Point) new ProjectivePoint(o.x, o.y, BigInteger.ONE);
+        } else {
             return null;
         }
 
@@ -148,9 +149,9 @@ public class EllipticCurve<Point> {
             AffinePoint pp = (AffinePoint) pPoint;
             AffinePoint qq = (AffinePoint) qPoint;
             // If any point is zero at infinity
-            if (pp.equals((AffinePoint)zeroAtInfinity)) {
+            if (pp.equals((AffinePoint) zeroAtInfinity)) {
                 return qPoint;
-            } else if (qq.equals((AffinePoint)zeroAtInfinity)) {
+            } else if (qq.equals((AffinePoint) zeroAtInfinity)) {
                 return pPoint;
             }
 
@@ -172,54 +173,45 @@ public class EllipticCurve<Point> {
             BigInteger y = (pp.x.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
             return (Point) new AffinePoint(x, y);
-        }
-    }
-
-    /**
-     * Add two different points from this elliptic curve
-     * 
-     * @param ProjectivePoint pPoint
-     * @param ProjectivePoint qPoint
-     * @return pPoint + qPoint on elliptic curve
-     */
-    public ProjectivePoint addPoints(ProjectivePoint pPoint, ProjectivePoint qPoint) {
-        return pPoint;
-    }
-
-    /**
-     * Double the point on this elliptic curve
-     * 
-     * @param AffinePoint pPoint
-     * @return 2*pPoint which is the same as pPoint + pPoint on elliptic curve
-     */
-    public AffinePoint doublePoint(AffinePoint pPoint) {
-
-        // p_y = 0 or p = zero at inf
-        if (pPoint.y.equals(BigInteger.ZERO) || pPoint.equals(zeroAtInfinity)) {
+        } else if (pPoint instanceof ProjectivePoint) {
+            return pPoint;
+        } else {
             return zeroAtInfinity;
         }
-
-        // (3*p_x^2 + a)/2*p_y
-        BigInteger alpha = (((BigInteger.valueOf(3)).multiply(pPoint.x.modPow(BigInteger.TWO, p))).add(a))
-                .multiply(((BigInteger.TWO).multiply(pPoint.y)).modInverse(p)).mod(p);
-
-        // x = alpha^2 - 2*p_x (mod p)
-        BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pPoint.y)).mod(p);
-
-        // y = -p_y + alpha * (p_x - x) (mod p)
-        BigInteger y = (pPoint.y.negate()).add(alpha.multiply(pPoint.x.subtract(x))).mod(p);
-
-        return new AffinePoint(x, y);
     }
 
     /**
      * Double the point on this elliptic curve
      * 
-     * @param pPoint
+     * @param Point pPoint
      * @return 2*pPoint which is the same as pPoint + pPoint on elliptic curve
      */
-    public ProjectivePoint doublePoint(ProjectivePoint pPoint) {
-        return pPoint;
+    public Point doublePoint(Point pPoint) {
+
+        if (pPoint instanceof AffinePoint) {
+
+            AffinePoint pp = (AffinePoint) pPoint;
+            // p_y = 0 or p = zero at inf
+            if (pp.y.equals(BigInteger.ZERO) || pp.equals((AffinePoint) zeroAtInfinity)) {
+                return zeroAtInfinity;
+            }
+
+            // (3*p_x^2 + a)/2*p_y
+            BigInteger alpha = (((BigInteger.valueOf(3)).multiply(pp.x.modPow(BigInteger.TWO, p))).add(a))
+                    .multiply(((BigInteger.TWO).multiply(pp.y)).modInverse(p)).mod(p);
+
+            // x = alpha^2 - 2*p_x (mod p)
+            BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pp.y)).mod(p);
+
+            // y = -p_y + alpha * (p_x - x) (mod p)
+            BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
+
+            return (Point) new AffinePoint(x, y);
+        } else if (pPoint instanceof ProjectivePoint) {
+            return pPoint;
+        } else {
+            return zeroAtInfinity;
+        }
     }
 
     /**
@@ -229,12 +221,12 @@ public class EllipticCurve<Point> {
      * @param point
      * @return
      */
-    public AffinePoint scalarMultiply(BigInteger n, AffinePoint point) {
+    public Point scalarMultiply(BigInteger n, Point point) {
         // Write scalar as binary number
         String nBinary = n.toString(2);
         // exponent of 2 at index 0
         int exp = nBinary.length() - 1;
-        AffinePoint result = null;
+        Point result = null;
 
         for (int i = 0; i < nBinary.length(); i++) {
             /*
@@ -242,7 +234,7 @@ public class EllipticCurve<Point> {
              * exponent for 2 at this place in binary representation) else do nothing
              */
             if (nBinary.charAt(i) == '1') {
-                AffinePoint partialSum = point;
+                Point partialSum = point;
                 for (int j = 0; j < exp; j++) {
                     partialSum = doublePoint(partialSum);
                 }
