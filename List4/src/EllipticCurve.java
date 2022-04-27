@@ -121,14 +121,11 @@ public class EllipticCurve {
             // o(x,y) = o(x,y+1)
             o.y = (o.y.add(BigInteger.ONE));
         }
-
-        // If basepoint is affine then 0 at inf is also analogously for projective
-        // coordinates
         if (basepoint instanceof AffinePoint) {
-            return (Point) o;
+            return o;
 
         } else if (basepoint instanceof ProjectivePoint) {
-            return (Point) new ProjectivePoint(o.x, o.y, BigInteger.ONE);
+            return new ProjectivePoint(BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO);
         } else {
             return null;
         }
@@ -172,8 +169,10 @@ public class EllipticCurve {
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.x.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
-            return (Point) new AffinePoint(x, y);
+            return new AffinePoint(x, y);
         } else if (pPoint instanceof ProjectivePoint) {
+            // TODO implement addition for projective coordinates
+
             return pPoint;
         } else {
             return zeroAtInfinity;
@@ -206,9 +205,33 @@ public class EllipticCurve {
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
-            return (Point) new AffinePoint(x, y);
+            return new AffinePoint(x, y);
         } else if (pPoint instanceof ProjectivePoint) {
-            return pPoint;
+
+            ProjectivePoint pp = (ProjectivePoint) pPoint;
+            // p_y = 0 or p = zero at inf
+            if (pp.y.equals(BigInteger.ZERO) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
+                return zeroAtInfinity;
+            }
+
+            // W = 3(X_1)^2 + a(Z_1)^2
+            BigInteger W = BigInteger.valueOf(3).multiply(pp.x.modPow(BigInteger.TWO, p))
+                    .add(a.multiply(pp.z).modPow(BigInteger.TWO, p)).mod(p);
+            // S = 2Y_1Z_1
+            BigInteger S = BigInteger.TWO.multiply(pp.y).multiply(pp.z).mod(p);
+            // B = 2SX_1Y_1
+            BigInteger B = BigInteger.TWO.multiply(pp.x).multiply(pp.y).mod(p);
+            // h = W^2 - 2B
+            BigInteger h = W.modPow(BigInteger.TWO, p).subtract(BigInteger.TWO.multiply(B)).mod(p);
+            // x3 = hS
+            BigInteger x3 = h.multiply(S).mod(p);
+            // y3 = W(B - h) - 2(SY_1)^2
+            BigInteger y3 = W.multiply(B.subtract(h))
+                    .subtract(BigInteger.TWO.multiply(S.multiply(pp.y).modPow(BigInteger.TWO, p))).mod(p);
+            // z3 = S^3
+            BigInteger z3 = S.modPow(BigInteger.valueOf(3), p);
+
+            return new ProjectivePoint(x3, y3, z3);
         } else {
             return zeroAtInfinity;
         }
@@ -219,7 +242,7 @@ public class EllipticCurve {
      * 
      * @param n
      * @param point
-     * @return
+     * @return point times n
      */
     public Point scalarMultiply(BigInteger n, Point point) {
         // Write scalar as binary number
