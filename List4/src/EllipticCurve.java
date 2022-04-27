@@ -167,7 +167,7 @@ public class EllipticCurve {
             // x = alpha^2 - p_x - q_x (mod p)
             BigInteger x = (alpha.modPow(BigInteger.TWO, p)).subtract(pp.x).subtract(qq.x).mod(p);
             // y = -p_y + alpha * (p_x - x) (mod p)
-            BigInteger y = (pp.x.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
+            BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
             return new AffinePoint(x, y);
         } else if (pPoint instanceof ProjectivePoint) {
@@ -242,7 +242,7 @@ public class EllipticCurve {
                     .multiply(((BigInteger.TWO).multiply(pp.y)).modInverse(p)).mod(p);
 
             // x = alpha^2 - 2*p_x (mod p)
-            BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pp.y)).mod(p);
+            BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pp.x)).mod(p);
 
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
