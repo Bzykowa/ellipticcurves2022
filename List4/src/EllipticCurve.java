@@ -152,7 +152,7 @@ public class EllipticCurve {
                 return pPoint;
             }
 
-            // If p_x = q_x result is zero at infinity
+            // If p_x = q_x result is zero at infinity or if p = q do doubling
             if (pp.x.equals(qq.x)) {
                 if (pp.y.equals(qq.y)) {
                     return doublePoint(pPoint);
@@ -171,9 +171,51 @@ public class EllipticCurve {
 
             return new AffinePoint(x, y);
         } else if (pPoint instanceof ProjectivePoint) {
-            // TODO implement addition for projective coordinates
 
-            return pPoint;
+            ProjectivePoint pp = (ProjectivePoint) pPoint;
+            ProjectivePoint qq = (ProjectivePoint) qPoint;
+
+            // If any point is zero at infinity
+            if (pp.equals((ProjectivePoint) zeroAtInfinity)) {
+                return qPoint;
+            } else if (qq.equals((ProjectivePoint) zeroAtInfinity)) {
+                return pPoint;
+            }
+
+            // If p_x = q_x result is zero at infinity or if p = q do doubling
+            if (pp.x.equals(qq.x)) {
+                if (pp.equals(qq)) {
+                    return doublePoint(pPoint);
+                } else {
+                    return zeroAtInfinity;
+                }
+            }
+
+            // W = Z_1Z_2
+            BigInteger W = pp.z.multiply(qq.z).mod(p);
+            // U1 = X_1Z_2
+            BigInteger U1 = pp.x.multiply(qq.z).mod(p);
+            // U2 = X_2Z_1
+            BigInteger U2 = qq.x.multiply(pp.z).mod(p);
+            // S1 = Y_1Z_2
+            BigInteger S1 = pp.y.multiply(qq.z).mod(p);
+            // S2 = Y_2Z_1
+            BigInteger S2 = qq.y.multiply(pp.z).mod(p);
+            // P = U_2 - U_1
+            BigInteger P = U2.subtract(U1).mod(p);
+            // R = S_2 - S_1
+            BigInteger R = S2.subtract(S1).mod(p);
+            // x3 = P(WR^2 - (U_1 + U_2)P^2)
+            BigInteger x3 = P.multiply(
+                    W.multiply(R.pow(2)).subtract(U1.add(U2).multiply(P.pow(2)))).mod(p);
+            // y3 = [R(-2WR^2 + 3(U_1 + U_2)P^2) - (S_1 + S_2)P^3]/2
+            BigInteger y3 = ((R.multiply(BigInteger.valueOf(-2).multiply(W).multiply(R.pow(2))
+                    .add(BigInteger.valueOf(3).multiply(U1.add(U2)).multiply(P.pow(2)))))
+                    .subtract(S1.add(S2).multiply(P.pow(3)))).multiply(BigInteger.TWO.modInverse(p)).mod(p);
+            // z3 = (P^3)W
+            BigInteger z3 = P.pow(2).multiply(W).mod(p);
+
+            return new ProjectivePoint(x3, y3, z3);
         } else {
             return zeroAtInfinity;
         }
