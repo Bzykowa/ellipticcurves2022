@@ -12,6 +12,12 @@ public class EllipticCurve {
     private BigInteger q;
     private Point zeroAtInfinity;
 
+    // Helpers to shorten code lines
+    private final BigInteger zero = BigInteger.ZERO;
+    private final BigInteger one = BigInteger.ONE;
+    private final BigInteger two = BigInteger.TWO;
+    private final BigInteger three = BigInteger.valueOf(3);
+
     /**
      * Main constructor of class
      * 
@@ -112,20 +118,20 @@ public class EllipticCurve {
      */
     private Point calculateZeroAtInfinity() {
 
-        AffinePoint o = new AffinePoint(BigInteger.ZERO, BigInteger.ZERO);
+        AffinePoint o = new AffinePoint(zero, zero);
 
         // y^2 (mod p) = x^3 + ax + b (mod p)
 
-        while (o.y.modPow(BigInteger.TWO, p).equals(o.x.pow(3).add(a.multiply(o.x)).add(b).mod(p))) {
+        while (o.y.modPow(two, p).equals(o.x.pow(3).add(a.multiply(o.x)).add(b).mod(p))) {
 
             // o(x,y) = o(x,y+1)
-            o.y = (o.y.add(BigInteger.ONE));
+            o.y = (o.y.add(one));
         }
         if (basepoint instanceof AffinePoint) {
             return o;
 
         } else if (basepoint instanceof ProjectivePoint) {
-            return new ProjectivePoint(BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO);
+            return new ProjectivePoint(zero, one, zero);
         } else {
             return null;
         }
@@ -165,7 +171,7 @@ public class EllipticCurve {
             BigInteger alpha = (qq.y.subtract(pp.y))
                     .multiply((qq.x.subtract(pp.x)).modInverse(p)).mod(p);
             // x = alpha^2 - p_x - q_x (mod p)
-            BigInteger x = (alpha.modPow(BigInteger.TWO, p)).subtract(pp.x).subtract(qq.x).mod(p);
+            BigInteger x = (alpha.modPow(two, p)).subtract(pp.x).subtract(qq.x).mod(p);
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
@@ -182,38 +188,39 @@ public class EllipticCurve {
                 return pPoint;
             }
 
-            // If p_x = q_x result is zero at infinity or if p = q do doubling
-            if (pp.x.equals(qq.x)) {
-                if (pp.equals(qq)) {
+            // U1 = Y_2 * Z_1
+            BigInteger U1 = qq.y.multiply(pp.z).mod(p);
+            // U2 = Y_1 * Z_2
+            BigInteger U2 = pp.y.multiply(qq.z).mod(p);
+            // V1 = X_2 * Z_1
+            BigInteger V1 = qq.x.multiply(pp.z).mod(p);
+            // V2 = X_1 * Z_2
+            BigInteger V2 = pp.x.multiply(qq.z).mod(p);
+
+            // If V1 = V2 result is zero at infinity or if U1 = U2 do doubling
+            if (V1.equals(V2)) {
+                if (U1.equals(U2)) {
                     return doublePoint(pPoint);
                 } else {
                     return zeroAtInfinity;
                 }
             }
 
-            // W = Z_1Z_2
+            // U = U_1 - U_2
+            BigInteger U = U1.subtract(U2).mod(p);
+            // V = V_1 - V_2
+            BigInteger V = V1.subtract(V2).mod(p);
+            // W = Z_1 * Z_2
             BigInteger W = pp.z.multiply(qq.z).mod(p);
-            // U1 = X_1Z_2
-            BigInteger U1 = pp.x.multiply(qq.z).mod(p);
-            // U2 = X_2Z_1
-            BigInteger U2 = qq.x.multiply(pp.z).mod(p);
-            // S1 = Y_1Z_2
-            BigInteger S1 = pp.y.multiply(qq.z).mod(p);
-            // S2 = Y_2Z_1
-            BigInteger S2 = qq.y.multiply(pp.z).mod(p);
-            // P = U_2 - U_1
-            BigInteger P = U2.subtract(U1).mod(p);
-            // R = S_2 - S_1
-            BigInteger R = S2.subtract(S1).mod(p);
-            // x3 = P(WR^2 - (U_1 + U_2)P^2)
-            BigInteger x3 = P.multiply(
-                    W.multiply(R.pow(2)).subtract(U1.add(U2).multiply(P.pow(2)))).mod(p);
-            // y3 = [R(-2WR^2 + 3(U_1 + U_2)P^2) - (S_1 + S_2)P^3]/2
-            BigInteger y3 = ((R.multiply(BigInteger.valueOf(-2).multiply(W).multiply(R.pow(2))
-                    .add(BigInteger.valueOf(3).multiply(U1.add(U2)).multiply(P.pow(2)))))
-                    .subtract(S1.add(S2).multiply(P.pow(3)))).multiply(BigInteger.TWO.modInverse(p)).mod(p);
-            // z3 = (P^3)W
-            BigInteger z3 = P.pow(2).multiply(W).mod(p);
+            // A = U^2 * W - V^3 - 2*V^2*V2
+            BigInteger A = U.modPow(two, p).multiply(W).subtract(V.modPow(three, p))
+                    .subtract(two.multiply(V.modPow(two, p)).multiply(V2)).mod(p);
+            // x3 = VA
+            BigInteger x3 = V.multiply(A).mod(p);
+            // y3 = U * (V^2 * V2 - A) - V^3 * U2
+            BigInteger y3 = U.multiply(V.modPow(two,p).multiply(V2).subtract(A)).subtract(V.modPow(three, p).multiply(U2)).mod(p);
+            // z3 = V^3 * W
+            BigInteger z3 = V.modPow(three, p).multiply(W).mod(p);
 
             return new ProjectivePoint(x3, y3, z3);
         } else {
@@ -233,16 +240,16 @@ public class EllipticCurve {
 
             AffinePoint pp = (AffinePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.equals(BigInteger.ZERO) || pp.equals((AffinePoint) zeroAtInfinity)) {
+            if (pp.y.equals(zero) || pp.equals((AffinePoint) zeroAtInfinity)) {
                 return zeroAtInfinity;
             }
 
             // (3*p_x^2 + a)/2*p_y
-            BigInteger alpha = (((BigInteger.valueOf(3)).multiply(pp.x.modPow(BigInteger.TWO, p))).add(a))
-                    .multiply(((BigInteger.TWO).multiply(pp.y)).modInverse(p)).mod(p);
+            BigInteger alpha = ((three.multiply(pp.x.modPow(two, p))).add(a))
+                    .multiply(((two).multiply(pp.y)).modInverse(p)).mod(p);
 
             // x = alpha^2 - 2*p_x (mod p)
-            BigInteger x = alpha.modPow(BigInteger.TWO, p).subtract((BigInteger.TWO).multiply(pp.x)).mod(p);
+            BigInteger x = alpha.modPow(two, p).subtract(two.multiply(pp.x)).mod(p);
 
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
@@ -252,26 +259,26 @@ public class EllipticCurve {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.equals(BigInteger.ZERO) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
+            if (pp.y.equals(zero) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
                 return zeroAtInfinity;
             }
 
-            // W = 3(X_1)^2 + a(Z_1)^2
-            BigInteger W = BigInteger.valueOf(3).multiply(pp.x.modPow(BigInteger.TWO, p))
-                    .add(a.multiply(pp.z).modPow(BigInteger.TWO, p)).mod(p);
-            // S = 2Y_1Z_1
-            BigInteger S = BigInteger.TWO.multiply(pp.y).multiply(pp.z).mod(p);
-            // B = 2SX_1Y_1
-            BigInteger B = BigInteger.TWO.multiply(pp.x).multiply(pp.y).mod(p);
-            // h = W^2 - 2B
-            BigInteger h = W.modPow(BigInteger.TWO, p).subtract(BigInteger.TWO.multiply(B)).mod(p);
-            // x3 = hS
-            BigInteger x3 = h.multiply(S).mod(p);
-            // y3 = W(B - h) - 2(SY_1)^2
-            BigInteger y3 = W.multiply(B.subtract(h))
-                    .subtract(BigInteger.TWO.multiply(S.multiply(pp.y).modPow(BigInteger.TWO, p))).mod(p);
-            // z3 = S^3
-            BigInteger z3 = S.modPow(BigInteger.valueOf(3), p);
+            // W = 3X^2 + aZ^2
+            BigInteger W = three.multiply(pp.x.modPow(two, p))
+                    .add(a.multiply(pp.z.modPow(two, p))).mod(p);
+            // S = YZ
+            BigInteger S = pp.y.multiply(pp.z).mod(p);
+            // B = XYS
+            BigInteger B = S.multiply(pp.x).multiply(pp.y).mod(p);
+            // h = W^2 - 8B
+            BigInteger h = W.modPow(two, p).subtract(two.pow(3).multiply(B)).mod(p);
+            // x3 = 2hS
+            BigInteger x3 = h.multiply(S).multiply(two).mod(p);
+            // y3 = W(4B - h) - 8(YS)^2
+            BigInteger y3 = W.multiply(two.pow(2).multiply(B).subtract(h))
+                    .subtract(two.pow(3).multiply((S.multiply(pp.y)).modPow(two, p))).mod(p);
+            // z3 = 8S^3
+            BigInteger z3 = two.pow(3).multiply(S.modPow(three, p)).mod(p);
 
             return new ProjectivePoint(x3, y3, z3);
         } else {

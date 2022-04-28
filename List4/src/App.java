@@ -78,17 +78,17 @@ public class App {
         PollardRhoEC pA = new PollardRhoEC(test_a, bigYA);
         PollardRhoEC pP = new PollardRhoEC(test_p, bigYP);
 
-        long startA = System.nanoTime();
+        long startA = System.currentTimeMillis();
         BigInteger ssA = pA.solveS();
-        long endA = System.nanoTime();
-        long startP = System.nanoTime();
+        long endA = System.currentTimeMillis();
+        long startP = System.currentTimeMillis();
         BigInteger ssP = pP.solveS();
-        long endP = System.nanoTime();
+        long endP = System.currentTimeMillis();
 
         System.out.println("Calculated " + input + " bit s (affine): " + ssA.toString());
-        System.out.println("Elapsed (affine): " + (endA - startA) + "ns");
         System.out.println("Calculated " + input + " bit s (projective): " + ssP.toString());
-        System.out.println("Elapsed (projective): " + (endP - startP) + "ns");
+        System.out.println("Elapsed (affine): " + (endA - startA) + "ms");
+        System.out.println("Elapsed (projective): " + (endP - startP) + "ms");
 
     }
 }

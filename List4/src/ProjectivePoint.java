@@ -13,7 +13,7 @@ public class ProjectivePoint extends Point{
     public boolean equals(Object q) {
         if (q instanceof ProjectivePoint) {
             ProjectivePoint qq = (ProjectivePoint) q;
-            return (x.equals(qq.x)) && (y.equals(qq.y)) && z.equals(qq.z);
+            return (x.equals(qq.x)) && (y.equals(qq.y)) && (z.equals(qq.z));
         } else {
             return false;
         }
