@@ -240,7 +240,7 @@ public class EllipticCurve {
 
             AffinePoint pp = (AffinePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.equals(zero) || pp.equals((AffinePoint) zeroAtInfinity)) {
+            if (pp.y.mod(p).equals(zero) || pp.equals((AffinePoint) zeroAtInfinity)) {
                 return zeroAtInfinity;
             }
 
@@ -259,7 +259,7 @@ public class EllipticCurve {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.equals(zero) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
+            if (pp.y.mod(p).equals(zero) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
                 return zeroAtInfinity;
             }
 

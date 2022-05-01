@@ -4,33 +4,46 @@ import java.util.Scanner;
 
 public class App {
 
-    private final static EllipticCurve ec40_a = new EllipticCurve(new BigInteger("819542760399"),
-            new BigInteger("450925713588"),
-            new BigInteger("928695305977"), new BigInteger("928696393343"),
-            new AffinePoint(new BigInteger("712862527867"), new BigInteger("341290948763")));
-
     private final static EllipticCurve ec10_a = new EllipticCurve(new BigInteger("253"), new BigInteger("364"),
             new BigInteger("647"), new BigInteger("643"),
             new AffinePoint(new BigInteger("373"), new BigInteger("298")));
-
-    private final static EllipticCurve ec60_a = new EllipticCurve(new BigInteger("44076867910191103"),
-            new BigInteger("605586970250934463"), new BigInteger("1139907280243627543"),
-            new BigInteger("1139907280255984973"),
-            new AffinePoint(new BigInteger("245862712227340576"), new BigInteger("970269412551424561")));
-    private final static EllipticCurve ec40_p = new EllipticCurve(new BigInteger("819542760399"),
-            new BigInteger("450925713588"),
-            new BigInteger("928695305977"), new BigInteger("928696393343"),
-            new ProjectivePoint(new BigInteger("712862527867"), new BigInteger("341290948763"), BigInteger.ONE));
+    private final static EllipticCurve ec15_a = new EllipticCurve(new BigInteger("9030"),
+            new BigInteger("11170"),
+            new BigInteger("19423"), new BigInteger("19373"),
+            new AffinePoint(new BigInteger("12411"), new BigInteger("15784")));
+    private final static EllipticCurve ec20_a = new EllipticCurve(new BigInteger("360572"),
+            new BigInteger("550596"),
+            new BigInteger("568187"), new BigInteger("568363"),
+            new AffinePoint(new BigInteger("281708"), new BigInteger("330842")));
+    private final static EllipticCurve ec25_a = new EllipticCurve(new BigInteger("14311794"),
+            new BigInteger("20151129"),
+            new BigInteger("25069619"), new BigInteger("25073423"),
+            new AffinePoint(new BigInteger("6708142"), new BigInteger("18333283")));
+    private final static EllipticCurve ec30_a = new EllipticCurve(new BigInteger("25537879"),
+            new BigInteger("251919295"),
+            new BigInteger("701253127"), new BigInteger("701289311"),
+            new AffinePoint(new BigInteger("436848809"), new BigInteger("675062066")));
 
     private final static EllipticCurve ec10_p = new EllipticCurve(new BigInteger("253"), new BigInteger("364"),
             new BigInteger("647"), new BigInteger("643"),
             new ProjectivePoint(new BigInteger("373"), new BigInteger("298"), BigInteger.ONE));
 
-    private final static EllipticCurve ec60_p = new EllipticCurve(new BigInteger("44076867910191103"),
-            new BigInteger("605586970250934463"), new BigInteger("1139907280243627543"),
-            new BigInteger("1139907280255984973"),
-            new ProjectivePoint(new BigInteger("245862712227340576"), new BigInteger("970269412551424561"),
-                    BigInteger.ONE));
+    private final static EllipticCurve ec15_p = new EllipticCurve(new BigInteger("9030"),
+            new BigInteger("11170"),
+            new BigInteger("19423"), new BigInteger("19373"),
+            new ProjectivePoint(new BigInteger("12411"), new BigInteger("15784"), BigInteger.ONE));
+    private final static EllipticCurve ec20_p = new EllipticCurve(new BigInteger("360572"),
+            new BigInteger("550596"),
+            new BigInteger("568187"), new BigInteger("568363"),
+            new ProjectivePoint(new BigInteger("281708"), new BigInteger("330842"), BigInteger.ONE));
+    private final static EllipticCurve ec25_p = new EllipticCurve(new BigInteger("14311794"),
+            new BigInteger("20151129"),
+            new BigInteger("25069619"), new BigInteger("25073423"),
+            new ProjectivePoint(new BigInteger("6708142"), new BigInteger("18333283"), BigInteger.ONE));
+    private final static EllipticCurve ec30_p = new EllipticCurve(new BigInteger("25537879"),
+            new BigInteger("251919295"),
+            new BigInteger("701253127"), new BigInteger("701289311"),
+            new ProjectivePoint(new BigInteger("436848809"), new BigInteger("675062066"), BigInteger.ONE));
 
     public static void main(String[] args) throws Exception {
 
@@ -38,7 +51,7 @@ public class App {
         EllipticCurve test_a = null;
         EllipticCurve test_p = null;
 
-        System.out.println("10/40/60");
+        System.out.println("10/15/20/25/30");
 
         Scanner in = new Scanner(System.in);
         String input = in.nextLine();
@@ -50,14 +63,24 @@ public class App {
                 test_p = ec10_p;
                 break;
             }
-            case "40": {
-                test_a = ec40_a;
-                test_p = ec40_p;
+            case "15": {
+                test_a = ec15_a;
+                test_p = ec15_p;
                 break;
             }
-            case "60": {
-                test_a = ec60_a;
-                test_p = ec60_p;
+            case "20": {
+                test_a = ec20_a;
+                test_p = ec20_p;
+                break;
+            }
+            case "25": {
+                test_a = ec25_a;
+                test_p = ec25_p;
+                break;
+            }
+            case "30": {
+                test_a = ec30_a;
+                test_p = ec30_p;
                 break;
             }
             default: {
