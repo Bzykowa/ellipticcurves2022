@@ -86,32 +86,53 @@ public class App {
             default: {
                 test_a = ec10_a;
                 test_p = ec10_p;
-                input = "10";
+                input = "test";
             }
         }
 
-        BigInteger s = BigInteger.valueOf(random.nextLong(test_a.getQ().longValue()));
-        AffinePoint bigYA = (AffinePoint) test_a.scalarMultiply(s, test_a.getBasepoint());
-        ProjectivePoint bigYP = (ProjectivePoint) test_p.scalarMultiply(s, test_p.getBasepoint());
+        if (input.equals("test")) {
 
-        System.out.println(input + " bit s: " + s.toString());
-        System.out.println("Y " + input + " bit (affine): " + bigYA.toString());
-        System.out.println("Y " + input + " bit (projective): " + bigYP.toString());
+            int correctAnswers = 0;
+            for (int i = 0; i < 100; i++) {
+                BigInteger s = BigInteger.valueOf(random.nextLong(test_a.getQ().longValue()));
+                AffinePoint bigYA = (AffinePoint) test_a.scalarMultiply(s, test_a.getBasepoint());
+                ProjectivePoint bigYP = (ProjectivePoint) test_p.scalarMultiply(s, test_p.getBasepoint());
+                AffinePoint bigYPConverted = test_p.toAffine(bigYP);
 
-        PollardRhoEC pA = new PollardRhoEC(test_a, bigYA);
-        PollardRhoEC pP = new PollardRhoEC(test_p, bigYP);
+                System.out.println("Affine: " + bigYA.toString() + "; Projective: " + bigYP.toString()
+                        + "; Converted to affine: " + bigYPConverted.toString());
 
-        long startA = System.currentTimeMillis();
-        BigInteger ssA = pA.solveS();
-        long endA = System.currentTimeMillis();
-        long startP = System.currentTimeMillis();
-        BigInteger ssP = pP.solveS();
-        long endP = System.currentTimeMillis();
+                if (bigYA.equals(bigYPConverted)) {
+                    correctAnswers++;
+                }
+            }
+            System.out.println("Tests passed: " + correctAnswers);
+            System.out.println("Tests failed: " + (100 - correctAnswers));
 
-        System.out.println("Calculated " + input + " bit s (affine): " + ssA.toString());
-        System.out.println("Calculated " + input + " bit s (projective): " + ssP.toString());
-        System.out.println("Elapsed (affine): " + (endA - startA) + "ms");
-        System.out.println("Elapsed (projective): " + (endP - startP) + "ms");
+        } else {
+            BigInteger s = BigInteger.valueOf(random.nextLong(test_a.getQ().longValue()));
+            AffinePoint bigYA = (AffinePoint) test_a.scalarMultiply(s, test_a.getBasepoint());
+            ProjectivePoint bigYP = (ProjectivePoint) test_p.scalarMultiply(s, test_p.getBasepoint());
+
+            System.out.println(input + " bit s: " + s.toString());
+            System.out.println("Y " + input + " bit (affine): " + bigYA.toString());
+            System.out.println("Y " + input + " bit (projective): " + bigYP.toString());
+
+            PollardRhoEC pA = new PollardRhoEC(test_a, bigYA);
+            PollardRhoEC pP = new PollardRhoEC(test_p, bigYP);
+
+            long startA = System.currentTimeMillis();
+            BigInteger ssA = pA.solveS();
+            long endA = System.currentTimeMillis();
+            long startP = System.currentTimeMillis();
+            BigInteger ssP = pP.solveS();
+            long endP = System.currentTimeMillis();
+
+            System.out.println("Calculated " + input + " bit s (affine): " + ssA.toString());
+            System.out.println("Calculated " + input + " bit s (projective): " + ssP.toString());
+            System.out.println("Elapsed (affine): " + (endA - startA) + "ms");
+            System.out.println("Elapsed (projective): " + (endP - startP) + "ms");
+        }
 
     }
 }

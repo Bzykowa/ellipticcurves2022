@@ -182,9 +182,9 @@ public class EllipticCurve {
             ProjectivePoint qq = (ProjectivePoint) qPoint;
 
             // If any point is zero at infinity
-            if (pp.equals((ProjectivePoint) zeroAtInfinity)) {
+            if (pp.isInfinity()) {
                 return qPoint;
-            } else if (qq.equals((ProjectivePoint) zeroAtInfinity)) {
+            } else if (qq.isInfinity()) {
                 return pPoint;
             }
 
@@ -218,7 +218,8 @@ public class EllipticCurve {
             // x3 = VA
             BigInteger x3 = V.multiply(A).mod(p);
             // y3 = U * (V^2 * V2 - A) - V^3 * U2
-            BigInteger y3 = U.multiply(V.modPow(two,p).multiply(V2).subtract(A)).subtract(V.modPow(three, p).multiply(U2)).mod(p);
+            BigInteger y3 = U.multiply(V.modPow(two, p).multiply(V2).subtract(A))
+                    .subtract(V.modPow(three, p).multiply(U2)).mod(p);
             // z3 = V^3 * W
             BigInteger z3 = V.modPow(three, p).multiply(W).mod(p);
 
@@ -259,7 +260,7 @@ public class EllipticCurve {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.mod(p).equals(zero) || pp.equals((ProjectivePoint) zeroAtInfinity)) {
+            if (pp.y.mod(p).equals(zero) || pp.isInfinity()) {
                 return zeroAtInfinity;
             }
 
@@ -318,6 +319,22 @@ public class EllipticCurve {
         }
 
         return result == null ? zeroAtInfinity : result;
+    }
+
+    public AffinePoint toAffine(ProjectivePoint pp) {
+        try {
+            BigInteger zInv = pp.z.modInverse(p);
+            return new AffinePoint(pp.x.multiply(zInv).mod(p), pp.y.multiply(zInv).mod(p));
+        } catch (ArithmeticException e) {
+            // e.printStackTrace();
+            // System.out.println("Point: " + pp.toString());
+            // Zero at infinity
+            return new AffinePoint(zero, zero);
+        }
+    }
+
+    public ProjectivePoint toProjective(AffinePoint pp) {
+        return new ProjectivePoint(pp.x, pp.y, BigInteger.ONE);
     }
 
 }
