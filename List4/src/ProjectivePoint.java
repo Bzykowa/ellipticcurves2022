@@ -5,9 +5,13 @@ public class ProjectivePoint extends Point {
     public BigInteger z;
 
     public ProjectivePoint(BigInteger x, BigInteger y, BigInteger z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        if (x.equals(BigInteger.ZERO) && y.equals(BigInteger.ZERO) && z.equals(BigInteger.ZERO)) {
+            throw new ArithmeticException();
+        } else {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
     }
 
     public boolean equals(Object q) {
@@ -33,7 +37,7 @@ public class ProjectivePoint extends Point {
     }
 
     public boolean isInfinity() {
-        return x.equals(BigInteger.ZERO) && y.equals(BigInteger.ONE);
+        return x.equals(BigInteger.ZERO) && z.equals(BigInteger.ZERO);
     }
 
 }
