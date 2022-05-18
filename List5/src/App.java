@@ -60,15 +60,21 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
-        int l = 512;
+        int l = 160;
         findOptimalParameters(l, S_100);
 
         System.out.println("For l = " + l + " optimal params are:");
         System.out.println("a = " + optimalParameters.a);
         System.out.println("b = " + optimalParameters.b);
         System.out.println("storage = " + optimalParameters.storage);
-        //System.out.println("h = " + optimalParameters.h);
-        //System.out.println("v = " + optimalParameters.v);
+        System.out.println("h = " + optimalParameters.h);
+        System.out.println("v = " + optimalParameters.v);
+        System.out.println("aLast = " + optimalParameters.aLast);
+        System.out.println("bLast = " + optimalParameters.bLast);
+        System.out.println("vLast = " + optimalParameters.vLast);
+
+        LimLee limlee = new LimLee(optimalParameters, P521);
+        limlee.precomputePoints();
 
     }
 }
