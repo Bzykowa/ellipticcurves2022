@@ -84,8 +84,8 @@ public class App {
                 break;
             }
             default: {
-                test_a = ec10_a;
-                test_p = ec10_p;
+                test_a = ec25_a;
+                test_p = ec25_p;
                 input = "test";
             }
         }

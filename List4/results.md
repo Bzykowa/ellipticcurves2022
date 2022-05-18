@@ -1,64 +1,64 @@
 # 10 bit
-$s = 388$
+$s = 470$
 
 Affine:
-Y = (74, 436);
-12 iterations;
-**Elapsed: 3 ms**
+Y = (25,221);
+25 iterations;
+**Elapsed: 4 ms**
 
 Projective:
-Y = (483, 625, 365);
-844 iterations;
-**Elapsed: 39 ms**
+Y = (160,638,524);
+216 iterations;
+**Elapsed: 13 ms**
 
 # 15 bit
-$s = 13299$
+$s = 17630$
 
 Affine:
-Y = (11925,13036);
-117 iterations;
-**Elapsed: 6ms**
+Y = (18789,15880);
+380 iterations;
+**Elapsed: 11ms**
 
 Projective:
-Y = (9698,5453,8143);
-11572 iterations;
-**Elapsed: 220ms**
+Y = (11579,13270,380);
+968 iterations;
+**Elapsed: 31ms**
 
 # 20 bit 
-$s = 377145$
+$s = 83708$
 
 Affine:
-Y = (425126,211766);
-1422 iterations;
-**Elapsed: 29ms**
+Y = (199916,360259);
+1560 iterations;
+**Elapsed: 31ms**
 
 Projective:
-Y = (78578,159297,256496);
-735231 iterations;
-**Elapsed: 5308ms**
+Y = (345617,345698,7360);
+305721 iterations;
+**Elapsed: 2486ms = 2,48s**
 
 # 25 bit 
-$s = 18724780$
+$s = 22150144$
 
 Affine:
-Y = (15139176,22475261);
-3696 iterations;
-**Elapsed: 65ms**
+Y = (4984501,2937192);
+9401 iterations;
+**Elapsed: 128ms**
 
 Projective:
-Y = (23244477,9503792,6385586);
-6553785 iterations;
-**Elapsed: 45636ms**
+Y = (22621867,15049614,24454524);
+16339124 iterations;
+**Elapsed: 117639ms = 1 min 57,6s**
 
 # 30 bit
-$s = 267267319$
+$s = 595165746$
 
 Affine:
-Y = (698166184,443457511);
-33964 iterations;
+Y = (357299366,69495035);
+27118 iterations;
 **Elapsed: 378ms**
 
 Projective:
-Y = (334165144,508301564,549072374);
+Y = (501714568,123573318,304999409);
 106530647 iterations;
-**Elapsed: 754149ms**
+**Elapsed: 754149ms = 12,57 minutes**
