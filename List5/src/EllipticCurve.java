@@ -93,8 +93,8 @@ public class EllipticCurve {
      * 
      * @return Point basepoint
      */
-    public Point getBasepoint() {
-        return basepoint;
+    public AffinePoint getBasepoint() {
+        return (AffinePoint) basepoint;
     }
 
     private void setBasepoint(Point basepoint) {
@@ -144,8 +144,9 @@ public class EllipticCurve {
      * @param Point pPoint
      * @param Point qPoint
      * @return pPoint + qPoint on elliptic curve
+     * @throws Exception
      */
-    public Point addPoints(Point pPoint, Point qPoint) {
+    public Point addPoints(Point pPoint, Point qPoint) throws Exception {
 
         if (pPoint instanceof AffinePoint) {
 
@@ -175,7 +176,12 @@ public class EllipticCurve {
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
-            return new AffinePoint(x, y);
+            AffinePoint result = new AffinePoint(x, y);
+            if (!result.equals(zeroAtInfinity) && !isOnCurve((AffinePoint) result)) {
+                throw new Exception("Point off the curve");
+            }
+
+            return result;
         } else if (pPoint instanceof ProjectivePoint) {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
@@ -234,8 +240,11 @@ public class EllipticCurve {
      * 
      * @param Point pPoint
      * @return 2*pPoint which is the same as pPoint + pPoint on elliptic curve
+     * @throws Exception If there's an error in doubling operation and the point
+     *                   generated is not on the curve. Check present only in affine
+     *                   coordinates.
      */
-    public Point doublePoint(Point pPoint) {
+    public Point doublePoint(Point pPoint) throws Exception {
 
         if (pPoint instanceof AffinePoint) {
 
@@ -255,7 +264,13 @@ public class EllipticCurve {
             // y = -p_y + alpha * (p_x - x) (mod p)
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
-            return new AffinePoint(x, y);
+            AffinePoint result = new AffinePoint(x, y);
+
+            if (!result.equals(zeroAtInfinity) && !isOnCurve((AffinePoint) result)) {
+                throw new Exception("Point off the curve");
+            }
+
+            return result;
         } else if (pPoint instanceof ProjectivePoint) {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
@@ -293,8 +308,11 @@ public class EllipticCurve {
      * @param n
      * @param point
      * @return point times n
+     * @throws Exception If there's an error in doubling operation and the point
+     *                   generated is not on the curve. Check present only in affine
+     *                   coordinates.
      */
-    public Point scalarMultiply(BigInteger n, Point point) {
+    public Point scalarMultiply(BigInteger n, Point point) throws Exception {
         // Write scalar as binary number
         String nBinary = n.toString(2);
         // exponent of 2 at index 0
@@ -318,9 +336,19 @@ public class EllipticCurve {
             exp = exp - 1;
         }
 
-        return result == null ? zeroAtInfinity : result;
+        result = result == null ? zeroAtInfinity : result;
+        if (!result.equals(zeroAtInfinity) && !isOnCurve((AffinePoint) result)) {
+            throw new Exception("Point off the curve");
+        }
+        return result;
     }
 
+    /**
+     * Transform a projective point into affine.
+     * 
+     * @param pp a projective point
+     * @return an affine point
+     */
     public AffinePoint toAffine(ProjectivePoint pp) {
         try {
             BigInteger zInv = pp.z.modInverse(p);
@@ -333,8 +361,24 @@ public class EllipticCurve {
         }
     }
 
+    /**
+     * Transform an affine point to a projective.
+     * 
+     * @param pp an affine point
+     * @return a projective point
+     */
     public ProjectivePoint toProjective(AffinePoint pp) {
         return new ProjectivePoint(pp.x, pp.y, BigInteger.ONE);
+    }
+
+    /**
+     * Check if a point is on this cure
+     * 
+     * @param pp an affine point
+     * @return true if it is; false if it isn't
+     */
+    private boolean isOnCurve(AffinePoint pp) {
+        return pp.y.modPow(two, p).equals(pp.x.modPow(three, p).add(a.multiply(pp.x)).add(b).mod(p));
     }
 
 }

@@ -13,6 +13,14 @@ public class LimLeeParameters {
     public BigInteger squarings;
     public BigInteger multiplications;
 
+    /**
+     * Create an instance of Lim-Lee parameters. Calculate all necessary parameters
+     * and prepare operations and storage estimations.
+     * 
+     * @param a Bit length of a big block
+     * @param b Bit length of a small block
+     * @param l Bit length of the exponent
+     */
     public LimLeeParameters(int a, int b, int l) {
         this.a = a;
         this.b = b;
@@ -42,7 +50,6 @@ public class LimLeeParameters {
      * @return Estimated number of multiplication required for the Lim-Lee
      */
     private BigInteger multiplicationCost() {
-        // 1 << h = 2^h
         BigInteger firstPart = (BigInteger.TWO.pow(h - 1).subtract(BigInteger.ONE))
                 .multiply(BigInteger.valueOf(a).subtract(BigInteger.valueOf(aLast)));
         BigInteger secondPart = (BigInteger.TWO.pow(h).subtract(BigInteger.ONE))

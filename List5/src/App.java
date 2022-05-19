@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,19 +9,17 @@ public class App {
     private static final int S_100 = 100;
     private static final int S_5000 = 5000;
     // As defined in NIST Guide
-    private static final EllipticCurve P521 = new EllipticCurve(BigInteger.valueOf(-3), new BigInteger(
-            "051953eb9618e1c9a1f929a21a0b68540eea2da725b99b315f3b8b489918ef109e156193951ec7e937b1652c0bd3bb1bf073573df883d2c34f1ef451fd46b503f00",
-            16),
-            new BigInteger(
-                    "6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151"),
+    private static final BigInteger p = new BigInteger(
+            "6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151");
+    private static final EllipticCurve P521 = new EllipticCurve(BigInteger.valueOf(-3).mod(p), new BigInteger(
+            "1093849038073734274511112390766805569936207598951683748994586394495953116150735016013708737573759623248592132296706313309438452531591012912142327488478985984"),
+            p,
             new BigInteger(
                     "6864797660130609714981900799081393217269435300143305409394463459185543183397655394245057746333217197532963996371363321113864768612440380340372808892707005449"),
             new AffinePoint(new BigInteger(
-                    "c6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66",
-                    16),
+                    "2661740802050217063228768716723360960729859168756973147706671368418802944996427808491545080627771902352094241225065558662157113545570916814161637315895999846"),
                     new BigInteger(
-                            "11839296a789a3bc0045c8a5fb42c7d1bd998f54449579b446817afbd17273e662c97ee72995ef42640c550b9013fad0761353c7086a272c24088be94769fd16650",
-                            16)));
+                            "3757180025770020463545507224491183603594455134769762486694567779615544477440556316691234405012945539562144444537289428522585666729196580810124344277578376784")));
 
     private static LimLeeParameters optimalParameters;
 
@@ -60,9 +59,12 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
-        int l = 160;
-        findOptimalParameters(l, S_100);
+        // Magic number as a test value
+        int l = 512;
+        BigInteger e = new BigInteger(l, 1, new SecureRandom());
+        findOptimalParameters(l, S_5000);
 
+        // Print optimal parameters that will be used in the algorithm test run
         System.out.println("For l = " + l + " optimal params are:");
         System.out.println("a = " + optimalParameters.a);
         System.out.println("b = " + optimalParameters.b);
@@ -73,8 +75,18 @@ public class App {
         System.out.println("bLast = " + optimalParameters.bLast);
         System.out.println("vLast = " + optimalParameters.vLast);
 
+        // Test on a NIST Curve
         LimLee limlee = new LimLee(optimalParameters, P521);
         limlee.precomputePoints();
+        AffinePoint Y = (AffinePoint) limlee.fastPow(e);
+        AffinePoint testY = (AffinePoint) P521.scalarMultiply(e, P521.getBasepoint());
+
+        System.out.println("Lim-Lee Y = " + Y.toString());
+        System.out.println("Scalar  Y = " + testY.toString());
+
+        // Print online operation costs
+        System.out.println("Online squares = " + limlee.onlineSquares);
+        System.out.println("Online multiplications = " + limlee.onlineMults);
 
     }
 }
