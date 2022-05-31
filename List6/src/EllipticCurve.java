@@ -17,6 +17,8 @@ public class EllipticCurve {
     private final BigInteger one = BigInteger.ONE;
     private final BigInteger two = BigInteger.TWO;
     private final BigInteger three = BigInteger.valueOf(3);
+    private final BigInteger four = BigInteger.valueOf(4);
+    private final BigInteger eight = BigInteger.valueOf(8);
 
     /**
      * Main constructor of class
@@ -132,6 +134,8 @@ public class EllipticCurve {
 
         } else if (basepoint instanceof ProjectivePoint) {
             return new ProjectivePoint(zero, one, zero);
+        } else if (basepoint instanceof JacobianPoint) {
+            return new JacobianPoint(zero, one, zero);
         } else {
             return null;
         }
@@ -147,7 +151,7 @@ public class EllipticCurve {
      */
     public Point addPoints(Point pPoint, Point qPoint) {
 
-        if (pPoint instanceof AffinePoint) {
+        if (pPoint instanceof AffinePoint && qPoint instanceof AffinePoint) {
 
             AffinePoint pp = (AffinePoint) pPoint;
             AffinePoint qq = (AffinePoint) qPoint;
@@ -176,7 +180,7 @@ public class EllipticCurve {
             BigInteger y = (pp.y.negate()).add(alpha.multiply(pp.x.subtract(x))).mod(p);
 
             return new AffinePoint(x, y);
-        } else if (pPoint instanceof ProjectivePoint) {
+        } else if (pPoint instanceof ProjectivePoint && qPoint instanceof ProjectivePoint) {
 
             ProjectivePoint pp = (ProjectivePoint) pPoint;
             ProjectivePoint qq = (ProjectivePoint) qPoint;
@@ -224,6 +228,44 @@ public class EllipticCurve {
             BigInteger z3 = V.modPow(three, p).multiply(W).mod(p);
 
             return new ProjectivePoint(x3, y3, z3);
+        } else if (pPoint instanceof JacobianPoint && qPoint instanceof JacobianPoint) {
+
+            JacobianPoint pp = (JacobianPoint) pPoint;
+            JacobianPoint qq = (JacobianPoint) qPoint;
+
+            // U1 = pp.x * qq.z^2
+            BigInteger U1 = pp.x.multiply(qq.z.modPow(two, p)).mod(p);
+            // U2 = qq.x * pp.z^2
+            BigInteger U2 = qq.x.multiply(pp.z.modPow(two, p)).mod(p);
+            // S1 = pp.y * qq.z^3
+            BigInteger S1 = pp.y.multiply(qq.z.modPow(three, p)).mod(p);
+            // S2 = qq.y * pp.z^3
+            BigInteger S2 = qq.y.multiply(pp.z.modPow(three, p)).mod(p);
+
+            // If U1 = U2 result is zero at infinity or if S1 = S2 do doubling
+            if (U1.equals(U2)) {
+                if (S1.equals(S2)) {
+                    return doublePoint(pPoint);
+                } else {
+                    return zeroAtInfinity;
+                }
+            }
+
+            // H = U2 - U1
+            BigInteger H = U2.subtract(U1).mod(p);
+            // R = S2 - S1
+            BigInteger R = S2.subtract(S1).mod(p);
+            // x3 = R^2 - H^3 - 2U1H^2
+            BigInteger x3 = R.modPow(two, p).subtract(H.modPow(three, p))
+                    .subtract(two.multiply(U1).multiply(H.modPow(two, p))).mod(p);
+            // y3 = R(U1H^2 - x3) - S1H^3
+            BigInteger y3 = R.multiply(U1.multiply(H.modPow(two, p)).subtract(x3))
+                    .subtract(S1.multiply(H.modPow(three, p))).mod(p);
+            // z3 = H * pp.z * qq.z
+            BigInteger z3 = H.multiply(pp.z).multiply(qq.z).mod(p);
+
+            return new JacobianPoint(x3, y3, z3);
+
         } else {
             return zeroAtInfinity;
         }
@@ -272,16 +314,36 @@ public class EllipticCurve {
             // B = XYS
             BigInteger B = S.multiply(pp.x).multiply(pp.y).mod(p);
             // h = W^2 - 8B
-            BigInteger h = W.modPow(two, p).subtract(two.pow(3).multiply(B)).mod(p);
+            BigInteger h = W.modPow(two, p).subtract(eight.multiply(B)).mod(p);
             // x3 = 2hS
             BigInteger x3 = h.multiply(S).multiply(two).mod(p);
             // y3 = W(4B - h) - 8(YS)^2
-            BigInteger y3 = W.multiply(two.pow(2).multiply(B).subtract(h))
-                    .subtract(two.pow(3).multiply((S.multiply(pp.y)).modPow(two, p))).mod(p);
+            BigInteger y3 = W.multiply(four.multiply(B).subtract(h))
+                    .subtract(eight.multiply((S.multiply(pp.y)).modPow(two, p))).mod(p);
             // z3 = 8S^3
-            BigInteger z3 = two.pow(3).multiply(S.modPow(three, p)).mod(p);
+            BigInteger z3 = eight.multiply(S.modPow(three, p)).mod(p);
 
             return new ProjectivePoint(x3, y3, z3);
+        } else if (pPoint instanceof JacobianPoint) {
+
+            JacobianPoint pp = (JacobianPoint) pPoint;
+
+            // pp.y = 0 or pp is zero at infinity
+            if (pp.y.mod(p).equals(zero) || pp.isInfinity())
+                return zeroAtInfinity;
+
+            // S = 4XY^2
+            BigInteger S = four.multiply(pp.x).multiply(pp.y.modPow(two, p)).mod(p);
+            // M = 3X^2 + aZ^4
+            BigInteger M = three.multiply(pp.x.modPow(two, p)).add(a.multiply(pp.z.modPow(four, p))).mod(p);
+            // x3 = M^2 - 2S
+            BigInteger x3 = M.modPow(two, p).add(two.multiply(S)).mod(p);
+            // y3 = M(S - x3) - 8Y^4
+            BigInteger y3 = M.multiply(S.subtract(x3)).subtract(eight.multiply(pp.y.modPow(four, p))).mod(p);
+            // z3 = 2YZ
+            BigInteger z3 = two.multiply(pp.y).multiply(pp.z).mod(p);
+
+            return new JacobianPoint(x3, y3, z3);
         } else {
             return zeroAtInfinity;
         }
@@ -321,18 +383,68 @@ public class EllipticCurve {
         return result == null ? zeroAtInfinity : result;
     }
 
+    /**
+     * Scalar multiplication P = k * G done in a double and add method presented
+     * during the lecture.
+     * 
+     * @param k scalar
+     * @param G point to multiply
+     * @return k * G
+     */
+    public Point doubleAndAdd(BigInteger k, Point G) {
+
+        // Write scalar as binary number
+        String kBinary = k.toString(2);
+        Point P = G;
+
+        for (int i = 1; i < kBinary.length(); i++) {
+            P = doublePoint(P);
+            if (kBinary.charAt(i) == '1')
+                P = addPoints(P, G);
+        }
+
+        return P;
+    }
+
+    /**
+     * Transform a ProjectivePoint to AffinePoint.
+     * 
+     * @param pp
+     * @return an affine coordinates version of pp
+     */
     public AffinePoint toAffine(ProjectivePoint pp) {
         try {
             BigInteger zInv = pp.z.modInverse(p);
             return new AffinePoint(pp.x.multiply(zInv).mod(p), pp.y.multiply(zInv).mod(p));
         } catch (ArithmeticException e) {
-            // e.printStackTrace();
-            // System.out.println("Point: " + pp.toString());
             // Zero at infinity
             return new AffinePoint(zero, zero);
         }
     }
 
+    /**
+     * Transform a JacobianPoint to AffinePoint.
+     * 
+     * @param pp
+     * @return an affine coordinates version of pp
+     */
+    public AffinePoint toAffine(JacobianPoint pp) {
+        try {
+            BigInteger z2Inv = pp.z.modPow(two.negate(), p);
+            BigInteger z3Inv = pp.z.modPow(three.negate(), p);
+            return new AffinePoint(pp.x.multiply(z2Inv).mod(p), pp.y.multiply(z3Inv).mod(p));
+        } catch (ArithmeticException e) {
+            // Zero at infinity
+            return new AffinePoint(zero, zero);
+        }
+    }
+
+    /**
+     * Transform a AffinePoint to ProjectivePoint.
+     * 
+     * @param pp
+     * @return a projective coordinates version of pp
+     */
     public ProjectivePoint toProjective(AffinePoint pp) {
         return new ProjectivePoint(pp.x, pp.y, BigInteger.ONE);
     }

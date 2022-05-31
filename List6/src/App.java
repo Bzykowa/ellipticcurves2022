@@ -10,7 +10,7 @@ public class App {
     private final static EllipticCurve TEST_CURVE = new EllipticCurve(new BigInteger("77782"),
             new BigInteger("401457"),
             new BigInteger("829561"), new BigInteger("830513"),
-            new AffinePoint(new BigInteger("555159"), new BigInteger("373454")));
+            new JacobianPoint(new BigInteger("555159"), new BigInteger("373454"), BigInteger.ONE));
 
     public static void main(String[] args) throws Exception {
 
@@ -23,7 +23,6 @@ public class App {
         // Generate with uniform distribution k value from [2, TEST_CURVE.Q - 1]
         SecureRandom random = new SecureRandom();
         int k = random.nextInt(2, TEST_CURVE.getQ().intValue());
-        
 
     }
 }

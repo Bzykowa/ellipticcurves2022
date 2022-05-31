@@ -14,6 +14,7 @@ public class ProjectivePoint extends Point {
         }
     }
 
+    @Override
     public boolean equals(Object q) {
         if (q instanceof ProjectivePoint) {
             ProjectivePoint qq = (ProjectivePoint) q;
@@ -32,6 +33,7 @@ public class ProjectivePoint extends Point {
         }
     }
 
+    @Override
     public String toString() {
         return "(" + x + "," + y + "," + z + ")";
     }
