@@ -1,5 +1,6 @@
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class App {
@@ -20,9 +21,48 @@ public class App {
         // Assert that q is odd
         assert TEST_CURVE.getQ().testBit(0);
 
-        // Generate with uniform distribution k value from [2, TEST_CURVE.Q - 1]
         SecureRandom random = new SecureRandom();
-        int k = random.nextInt(2, TEST_CURVE.getQ().intValue());
+
+        System.out.println("test / attack");
+        Scanner in = new Scanner(System.in);
+        String input = in.nextLine();
+        in.close();
+
+        switch (input) {
+            // Test correctness of double-and-add method and Jacobian coordinates operations
+            case "test": {
+                int correctAnswers = 0;
+                for (int i = 0; i < 100; i++) {
+                    BigInteger k = BigInteger.valueOf(random.nextLong(2, TEST_CURVE.getQ().longValue()));
+                    ArrayList<Point> intermediateA = TEST_CURVE.doubleAndAdd(k,
+                            TEST_CURVE.toAffine(TEST_CURVE.getBasepoint()));
+                    ArrayList<Point> intermediateJ = TEST_CURVE.doubleAndAdd(k, TEST_CURVE.getBasepoint());
+                    AffinePoint bigPA = (AffinePoint) intermediateA.get(intermediateA.size() - 1);
+                    JacobianPoint bigPJ = (JacobianPoint) intermediateJ.get(intermediateJ.size() - 1);
+                    AffinePoint bigPJConverted = TEST_CURVE.toAffine(bigPJ);
+
+                    System.out.println("Affine: " + bigPA.toString() + "; Jacobian: " + bigPJ.toString()
+                            + "; Converted to affine: " + bigPJConverted.toString());
+
+                    if (bigPA.equals(bigPJConverted)) {
+                        correctAnswers++;
+                    }
+                }
+                System.out.println("Tests passed: " + correctAnswers);
+                System.out.println("Tests failed: " + (100 - correctAnswers));
+                break;
+            }
+            case "attack": {
+                // TODO implement someday
+                // Generate with uniform distribution k value from [2, TEST_CURVE.Q - 1]
+                int k = random.nextInt(2, TEST_CURVE.getQ().intValue());
+                break;
+            }
+            default: {
+                System.out.println("No mode of operation chosen. Closing...");
+            }
+
+        }
 
     }
 }

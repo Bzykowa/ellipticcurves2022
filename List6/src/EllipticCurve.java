@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 /**
  * Class representing an elliptic curve E_a,b(F_p) of order q with its basepoint
@@ -156,9 +157,9 @@ public class EllipticCurve {
             AffinePoint pp = (AffinePoint) pPoint;
             AffinePoint qq = (AffinePoint) qPoint;
             // If any point is zero at infinity
-            if (pp.equals((AffinePoint) zeroAtInfinity)) {
+            if (pp.equals(toAffine(zeroAtInfinity))) {
                 return qPoint;
-            } else if (qq.equals((AffinePoint) zeroAtInfinity)) {
+            } else if (qq.equals(toAffine(zeroAtInfinity))) {
                 return pPoint;
             }
 
@@ -283,7 +284,7 @@ public class EllipticCurve {
 
             AffinePoint pp = (AffinePoint) pPoint;
             // p_y = 0 or p = zero at inf
-            if (pp.y.mod(p).equals(zero) || pp.equals((AffinePoint) zeroAtInfinity)) {
+            if (pp.y.mod(p).equals(zero) || pp.equals(toAffine(zeroAtInfinity))) {
                 return zeroAtInfinity;
             }
 
@@ -337,7 +338,7 @@ public class EllipticCurve {
             // M = 3X^2 + aZ^4
             BigInteger M = three.multiply(pp.x.modPow(two, p)).add(a.multiply(pp.z.modPow(four, p))).mod(p);
             // x3 = M^2 - 2S
-            BigInteger x3 = M.modPow(two, p).add(two.multiply(S)).mod(p);
+            BigInteger x3 = M.modPow(two, p).subtract(two.multiply(S)).mod(p);
             // y3 = M(S - x3) - 8Y^4
             BigInteger y3 = M.multiply(S.subtract(x3)).subtract(eight.multiply(pp.y.modPow(four, p))).mod(p);
             // z3 = 2YZ
@@ -389,50 +390,49 @@ public class EllipticCurve {
      * 
      * @param k scalar
      * @param G point to multiply
-     * @return k * G
+     * @return k * G with intermediate points 
      */
-    public Point doubleAndAdd(BigInteger k, Point G) {
+    public ArrayList<Point> doubleAndAdd(BigInteger k, Point G) {
 
         // Write scalar as binary number
         String kBinary = k.toString(2);
+        ArrayList<Point> intermediate = new ArrayList<Point>();
         Point P = G;
+        intermediate.add(P);
 
         for (int i = 1; i < kBinary.length(); i++) {
             P = doublePoint(P);
+            intermediate.add(P);
             if (kBinary.charAt(i) == '1')
                 P = addPoints(P, G);
+                intermediate.add(P);
         }
 
-        return P;
+        return intermediate;
     }
 
     /**
-     * Transform a ProjectivePoint to AffinePoint.
+     * Transform a Point to AffinePoint.
      * 
      * @param pp
      * @return an affine coordinates version of pp
      */
-    public AffinePoint toAffine(ProjectivePoint pp) {
+    public AffinePoint toAffine(Point pp) {
         try {
-            BigInteger zInv = pp.z.modInverse(p);
-            return new AffinePoint(pp.x.multiply(zInv).mod(p), pp.y.multiply(zInv).mod(p));
-        } catch (ArithmeticException e) {
-            // Zero at infinity
-            return new AffinePoint(zero, zero);
-        }
-    }
+            if (pp instanceof ProjectivePoint) {
+                ProjectivePoint ppp = (ProjectivePoint) pp;
+                BigInteger zInv = ppp.z.modInverse(p);
+                return new AffinePoint(ppp.x.multiply(zInv).mod(p), ppp.y.multiply(zInv).mod(p));
+            } else if (pp instanceof JacobianPoint) {
+                JacobianPoint ppp = (JacobianPoint) pp;
+                BigInteger z2Inv = ppp.z.modPow(two.negate(), p);
+                BigInteger z3Inv = ppp.z.modPow(three.negate(), p);
+                return new AffinePoint(ppp.x.multiply(z2Inv).mod(p), ppp.y.multiply(z3Inv).mod(p));
+            } else {
+                // if not those two then the point is affine
+                return (AffinePoint) pp;
+            }
 
-    /**
-     * Transform a JacobianPoint to AffinePoint.
-     * 
-     * @param pp
-     * @return an affine coordinates version of pp
-     */
-    public AffinePoint toAffine(JacobianPoint pp) {
-        try {
-            BigInteger z2Inv = pp.z.modPow(two.negate(), p);
-            BigInteger z3Inv = pp.z.modPow(three.negate(), p);
-            return new AffinePoint(pp.x.multiply(z2Inv).mod(p), pp.y.multiply(z3Inv).mod(p));
         } catch (ArithmeticException e) {
             // Zero at infinity
             return new AffinePoint(zero, zero);
